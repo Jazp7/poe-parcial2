@@ -1,5 +1,15 @@
 # Gestor de Tareas por Prioridad
 
+## Capturas de pantalla
+
+| Crear tareas | Filtrar tareas |
+| --- | --- |
+| <img src="./docs/ingresar-tarea.png" width="440" alt="Formulario para ingresar una tarea con prioridad, fecha límite y categoría"> | <img src="./docs/filtrar.png" width="440" alt="Filtros por estado, prioridad y categoría aplicados a la lista"> |
+
+| Editar tareas | Confirmar eliminación |
+| --- | --- |
+| <img src="./docs/editar-tarea.png" width="440" alt="Formulario de edición de una tarea existente"> | <img src="./docs/borrar-tarea.png" width="440" alt="Diálogo de confirmación antes de eliminar una tarea"> |
+
 Aplicación web desarrollada con **TypeScript**, **Vite** y arquitectura **Modelo-Vista-Controlador (MVC)**. Esta actualización amplía el gestor del laboratorio con fechas límite, categorías, edición, filtros combinables, nuevos criterios de ordenamiento, alertas de vencimiento y notificaciones del navegador.
 
 ## Mejoras de esta actualización
