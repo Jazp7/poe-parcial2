@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestor de Tareas por Prioridad - MVC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles/styles.css" />
+</head>
+<body>
+  <div id="app" class="app-container">
+    <!-- Encabezado Principal -->
+    <header class="app-header">
+      <div class="header-text">
+        <h1>Gestor de Tareas</h1>
+        <p class="subtitle">Organización por Prioridad &bull; Arquitectura MVC</p>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- Sección: Formulario para Nueva Tarea -->
+      <section class="card form-section" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="section-title">Nueva Tarea</h2>
+        <form id="formulario-tarea" class="task-form">
+          <div class="form-group form-group-input">
+            <label for="input-titulo">Título de la tarea</label>
+            <input 
+              type="text" 
+              id="input-titulo" 
+              placeholder="Ej. Revisar entregables del sprint..." 
+              autocomplete="off" 
+              required 
+            />
+          </div>
+
+          <div class="form-group form-group-select">
+            <label for="select-prioridad">Prioridad</label>
+            <select id="select-prioridad" required>
+              <option value="alta">🔴 Alta</option>
+              <option value="media" selected>🟡 Media</option>
+              <option value="baja">🟢 Baja</option>
+            </select>
+          </div>
+
+          <button type="submit" id="btn-agregar" class="btn btn-primary">
+            <span class="btn-icon">+</span>
+            <span>Agregar</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Sección: Panel de Controles, Filtros y Métricas -->
+      <section class="card controls-section" aria-labelledby="controls-heading">
+        <div class="controls-header">
+          <h2 id="controls-heading" class="section-title">Filtros y Ordenamiento</h2>
+          <!-- Resumen de Contadores -->
+          <div class="stats-bar" id="stats-bar">
+            <span class="stat-badge stat-total">Total: <strong id="stat-total">0</strong></span>
+            <span class="stat-badge stat-pendientes">Pendientes: <strong id="stat-pendientes">0</strong></span>
+            <span class="stat-badge stat-completadas">Completadas: <strong id="stat-completadas">0</strong></span>
+          </div>
+        </div>
+
+        <div class="controls-grid">
+          <!-- Filtro por Estado -->
+          <div class="control-group">
+            <label for="filtro-estado">Estado:</label>
+            <select id="filtro-estado" class="control-select">
+              <option value="todas">Todas</option>
+              <option value="pendientes">Pendientes</option>
+              <option value="completadas">Completadas</option>
+            </select>
+          </div>
+
+          <!-- Filtro por Prioridad -->
+          <div class="control-group">
+            <label for="filtro-prioridad">Prioridad:</label>
+            <select id="filtro-prioridad" class="control-select">
+              <option value="todas">Todas</option>
+              <option value="alta">Alta</option>
+              <option value="media">Media</option>
+              <option value="baja">Baja</option>
+            </select>
+          </div>
+
+          <!-- Criterio de Ordenamiento -->
+          <div class="control-group">
+            <label for="orden-criterio">Ordenar por:</label>
+            <select id="orden-criterio" class="control-select">
+              <option value="fecha-desc">Más recientes primero</option>
+              <option value="fecha-asc">Más antiguas primero</option>
+              <option value="prioridad-desc">Mayor prioridad (Alta &rarr; Baja)</option>
+              <option value="prioridad-asc">Menor prioridad (Baja &rarr; Alta)</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sección: Lista de Tareas -->
+      <section class="tasks-section" aria-labelledby="tasks-heading">
+        <h2 id="tasks-heading" class="sr-only">Listado de tareas</h2>
+        <ul id="lista-tareas" class="tasks-list" role="list">
+          <!-- Renderizado dinámico desde TareaView -->
+        </ul>
+
+        <!-- Contenedor de Estado Vacío -->
+        <div id="empty-state" class="empty-state hidden">
+          <div class="empty-icon">📂</div>
+          <p class="empty-title">No hay tareas para mostrar</p>
+          <p class="empty-subtitle">Agrega una nueva tarea o ajusta los filtros seleccionados.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal de Confirmación para Eliminar -->
+    <div id="modal-confirmacion" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="modal-titulo" class="modal-title">¿Eliminar tarea?</h3>
+        </div>
+        <p class="modal-message">
+          ¿Estás seguro de que deseas eliminar la tarea <strong id="modal-tarea-titulo"></strong>? Esta acción no se puede deshacer.
+        </p>
+        <div class="modal-actions">
+          <button type="button" id="btn-modal-cancelar" class="btn btn-secondary">Cancelar</button>
+          <button type="button" id="btn-modal-confirmar" class="btn btn-danger">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
