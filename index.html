@@ -20,7 +20,7 @@
     </header>
 
     <main class="app-main">
-      <!-- Sección: Formulario para Nueva Tarea -->
+      <!-- Sección: Formulario para crear o editar una tarea -->
       <section class="card form-section" aria-labelledby="form-heading">
         <h2 id="form-heading" class="section-title">Nueva Tarea</h2>
         <form id="formulario-tarea" class="task-form">
@@ -44,10 +44,23 @@
             </select>
           </div>
 
-          <button type="submit" id="btn-agregar" class="btn btn-primary">
+          <div class="form-group">
+            <label for="input-fecha-limite">Fecha límite</label>
+            <input type="date" id="input-fecha-limite" />
+          </div>
+
+          <div class="form-group">
+            <label for="input-categoria">Categoría</label>
+            <input type="text" id="input-categoria" placeholder="Ej. Estudio" maxlength="40" />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-agregar" class="btn btn-primary">
             <span class="btn-icon">+</span>
             <span>Agregar</span>
-          </button>
+            </button>
+            <button type="button" id="btn-cancelar-edicion" class="btn btn-secondary hidden">Cancelar</button>
+          </div>
         </form>
       </section>
 
@@ -60,6 +73,9 @@
             <span class="stat-badge stat-total">Total: <strong id="stat-total">0</strong></span>
             <span class="stat-badge stat-pendientes">Pendientes: <strong id="stat-pendientes">0</strong></span>
             <span class="stat-badge stat-completadas">Completadas: <strong id="stat-completadas">0</strong></span>
+            <span class="stat-badge">Alta: <strong id="stat-alta">0</strong></span>
+            <span class="stat-badge">Media: <strong id="stat-media">0</strong></span>
+            <span class="stat-badge">Baja: <strong id="stat-baja">0</strong></span>
           </div>
         </div>
 
@@ -85,16 +101,31 @@
             </select>
           </div>
 
+          <div class="control-group">
+            <label for="filtro-categoria">Categoría:</label>
+            <select id="filtro-categoria" class="control-select">
+              <option value="todas">Todas</option>
+            </select>
+          </div>
+
           <!-- Criterio de Ordenamiento -->
           <div class="control-group">
             <label for="orden-criterio">Ordenar por:</label>
             <select id="orden-criterio" class="control-select">
-              <option value="fecha-desc">Más recientes primero</option>
-              <option value="fecha-asc">Más antiguas primero</option>
+              <option value="titulo-asc">Título (A-Z)</option>
+              <option value="titulo-desc">Título (Z-A)</option>
+              <option value="fechaLimite-asc">Fecha límite (más próxima)</option>
+              <option value="fechaLimite-desc">Fecha límite (más lejana)</option>
               <option value="prioridad-desc">Mayor prioridad (Alta &rarr; Baja)</option>
               <option value="prioridad-asc">Menor prioridad (Baja &rarr; Alta)</option>
+              <option value="fecha-desc" selected>Más recientes primero</option>
+              <option value="fecha-asc">Más antiguas primero</option>
             </select>
           </div>
+        </div>
+        <div class="notification-controls">
+          <p id="notification-status" role="status">Activa las notificaciones para recibir avisos de tareas próximas a vencer.</p>
+          <button type="button" id="btn-notificaciones" class="btn btn-secondary">Activar notificaciones</button>
         </div>
       </section>
 
