@@ -1,12 +1,30 @@
-# Gestor de Tareas por Prioridad (Arquitectura MVC)
+# Gestor de Tareas por Prioridad
 
-Aplicación web desarrollada en **TypeScript** bajo el patrón de arquitectura de software **Modelo-Vista-Controlador (MVC)**. Permite gestionar tareas pendientes y completadas clasificadas por niveles de prioridad (`alta`, `media`, `baja`), con capacidades avanzadas de ordenación dinámica, filtros combinados, diálogo de confirmación y persistencia local continua en el navegador a través de `localStorage`.
+Aplicación web desarrollada con **TypeScript**, **Vite** y arquitectura **Modelo-Vista-Controlador (MVC)**. Esta actualización amplía el gestor del laboratorio con fechas límite, categorías, edición, filtros combinables, nuevos criterios de ordenamiento, alertas de vencimiento y notificaciones del navegador.
 
----
+## Mejoras de esta actualización
 
-## 🏛️ Arquitectura del Sistema (MVC)
+| Requisito | Implementación |
+| --- | --- |
+| **RF-01 — Fecha límite y categoría** | Cada tarea puede tener una fecha límite opcional y una categoría. Si no se especifica categoría, se asigna **General**. |
+| **RF-02 — Editar tareas** | El botón de edición carga la tarea en el formulario; guardar conserva su fecha de creación y actualiza sus demás campos. |
+| **RF-03 — Eliminar con confirmación** | La eliminación conserva el diálogo de confirmación para prevenir borrados accidentales. |
+| **RF-04 — Filtros** | Se pueden combinar los filtros de prioridad, categoría y estado (todas, pendientes o completadas). |
+| **RF-05 — Ordenamiento** | Las tareas se ordenan por prioridad, fecha límite, título o fecha de creación, en orden ascendente o descendente cuando aplica. |
+| **RF-06 — Persistencia** | El servicio guarda automáticamente las tareas en `localStorage`, incluidos su fecha límite y categoría. |
+| **RF-07 — Contadores por prioridad** | El resumen muestra el total de tareas de prioridad alta, media y baja, además de los contadores de estado. |
+| **RF-09 — Tareas vencidas** | Las tareas pendientes con fecha límite anterior al día actual se identifican con texto y fondo rojos. Las completadas no se consideran vencidas. |
+| **Reto — Notificaciones** | El usuario puede activar notificaciones del navegador para recibir un aviso cuando una tarea pendiente vence hoy o mañana. |
 
-El proyecto separa estrictamente la lógica de datos, la presentación visual y la coordinación de eventos:
+Las sub-tareas del requisito opcional RF-08 no se incluyen en esta entrega.
+
+### Notificaciones del navegador
+
+Las notificaciones son opcionales y requieren que el usuario pulse **Activar notificaciones** y conceda permiso en el navegador. Se comprueban mientras la aplicación está abierta y se muestra como máximo un aviso por tarea y fecha límite. El navegador puede requerir un contexto seguro (`localhost` o HTTPS); si no admite notificaciones o se deniega el permiso, el estado se comunica en la interfaz.
+
+## Arquitectura MVC
+
+La separación entre modelo, vista, controlador y servicio de almacenamiento permite mantener la lógica de negocio independiente de la interfaz y de la persistencia.
 
 ```text
 ┌─────────────────┐       Eventos UI       ┌─────────────────────┐
@@ -14,104 +32,103 @@ El proyecto separa estrictamente la lógica de datos, la presentación visual y 
 │     (Vista)     │◄───────────────────────┤    (Controlador)    │
 └─────────────────┘   Renderiza datos      └────┬───────────┬────┘
                                                 │           │
-                          Manipula instancias   │           │ Persiste / Recupera
                                                 ▼           ▼
                                        ┌──────────────┐ ┌────────────────┐
                                        │    Tarea     │ │ StorageService │
                                        │   (Modelo)   │ │   (Servicio)   │
                                        └──────────────┘ └───────┬────────┘
-                                                                │
                                                                 ▼
                                                         ┌──────────────┐
                                                         │ localStorage │
                                                         └──────────────┘
 ```
 
-### Componentes y Responsabilidades
+### Componentes y responsabilidades
 
-1. **Modelo (`src/models/Tarea.ts`)**:
-   - Representa la entidad de dominio con propiedades: `id`, `titulo`, `prioridad`, `completada` y `fecha`.
-   - Incluye métodos para validación de datos, cálculo de peso numérico de prioridad (`alta: 3`, `media: 2`, `baja: 1`), alternancia de estado y serialización/deserialización segura.
+1. **Entidad — `src/models/Tarea.ts`**
+   - Define los datos de una tarea: `id`, `titulo`, `prioridad`, `completada`, `fecha` de creación, `fechaLimite` y `categoria`.
+   - Valida título, prioridad, categoría y fecha límite; calcula el peso de prioridad y determina si una tarea pendiente está vencida.
+   - Reconstruye los datos guardados, incluidos los registros del formato anterior.
+2. **Modelo de tareas — `src/models/TareaModel.ts`**
+   - Administra la colección y centraliza `updateTarea()`, `deleteTarea()`, `getTareasVencidas()` y `getContadorPorPrioridad()`.
+3. **Vista — `src/views/TareaView.ts`**
+   - Renderiza las tarjetas, distintivos de prioridad, categoría y alertas de vencimiento.
+   - Administra el formulario compartido de creación y edición, los controles de filtros, los contadores y el diálogo de confirmación.
+   - Muestra el estado y la activación de las notificaciones del navegador.
+4. **Controlador — `src/controllers/TareaController.ts`**
+   - Coordina creación, edición, cambio de estado y eliminación de tareas.
+   - Aplica filtros combinados y ordena por prioridad, fecha límite, título o fecha de creación.
+   - Calcula los contadores por prioridad y programa la revisión de tareas próximas a vencer.
+5. **Servicio — `src/services/StorageService.ts`**
+   - Encapsula la lectura y escritura de tareas en `localStorage` y reconstruye instancias del modelo.
 
-2. **Vista (`src/views/TareaView.ts`)**:
-   - Gestiona el DOM, renderiza las tarjetas de tareas con códigos de color e indicadores según prioridad:
-     - 🔴 **Alta**: Acentos en rojo carmesí.
-     - 🟡 **Media**: Acentos en amarillo ámbar.
-     - 🟢 **Baja**: Acentos en verde esmeralda.
-   - Provee el modal de confirmación antes de la eliminación de cualquier tarea.
-   - Refleja contadores de estado (Total, Pendientes, Completadas).
-   - Expone métodos desacoplados para suscribir manejadores de eventos.
+### Compatibilidad de datos
 
-3. **Servicio (`src/services/StorageService.ts`)**:
-   - Encapsula la comunicación con la API Web `localStorage`.
-   - Proporciona persistencia segura con control de excepciones y reconstrucción de tipos.
+Las tareas guardadas antes de esta actualización se conservan. Al cargarlas, las que no tengan los nuevos campos reciben la categoría **General** y quedan sin fecha límite.
 
-4. **Controlador (`src/controllers/TareaController.ts`)**:
-   - Orquesta el flujo de negocio: procesa el registro, la alternancia de estado y la eliminación de tareas.
-   - Implementa los algoritmos de filtrado combinado (por prioridad y por estado) y ordenamiento dinámico (cronológico y por ponderación de prioridad).
-   - Mantiene sincronizada la persistencia en `StorageService` y la representación en `TareaView`.
-
----
-
-## 📁 Estructura del Proyecto
+## Estructura del proyecto
 
 ```text
 poe-lab2/
-├── index.html                  # Plantilla semántica principal y modal
-├── package.json                # Configuración de dependencias y scripts
-├── tsconfig.json               # Configuración del compilador de TypeScript
-├── pnpm-lock.yaml              # Archivo de bloqueo de dependencias
-├── README.md                   # Documentación técnica completa
+├── index.html
+├── package.json
+├── tsconfig.json
+├── pnpm-lock.yaml
+├── README.md
 └── src/
-    ├── main.ts                 # Punto de entrada e inicialización de MVC
+    ├── main.ts
     ├── models/
-    │   └── Tarea.ts            # Entidad y tipos del Modelo
+    │   ├── Tarea.ts
+    │   └── TareaModel.ts
     ├── views/
-    │   └── TareaView.ts        # Renderizado del DOM y gestión de la Vista
+    │   └── TareaView.ts
     ├── controllers/
-    │   └── TareaController.ts  # Lógica de negocio y Controlador
+    │   └── TareaController.ts
     ├── services/
-    │   └── StorageService.ts   # Persistencia en localStorage
+    │   └── StorageService.ts
     └── styles/
-        └── styles.css          # Estilos modernos, diseño responsive y temas de prioridad
+        └── styles.css
 ```
 
----
-
-## 🚀 Requisitos y Puesta en Marcha
+## Requisitos y puesta en marcha
 
 ### Prerrequisitos
-- [Node.js](https://nodejs.org/) (versión 18 o superior recomendada)
-- [pnpm](https://pnpm.io/) (versión 9 o superior)
 
-### Instalación de dependencias
+- [Node.js](https://nodejs.org/) versión 18 o superior.
+- [pnpm](https://pnpm.io/) versión 9 o superior.
+
+### Instalar dependencias
+
 ```bash
 pnpm install
 ```
 
-### Ejecutar en entorno de desarrollo local
+### Ejecutar en desarrollo
+
 ```bash
 pnpm dev
 ```
-Abre la URL proporcionada en la terminal (por ejemplo, `http://localhost:5173`) en tu navegador web.
 
-### Validar tipado y compilar a producción
+Abre en el navegador la dirección local que muestra Vite, normalmente `http://localhost:5173`.
+
+### Compilar y validar tipos
+
 ```bash
 pnpm build
 ```
 
-### Previsualizar la versión compilada
+### Previsualizar la compilación
+
 ```bash
 pnpm preview
 ```
 
----
+## Funcionalidades base conservadas
 
-## ✨ Funcionalidades Comprobadas
-- [x] **Registro de tareas**: Título no vacío con asignación de nivel de prioridad.
-- [x] **Identificación visual**: Distintivos y bordes temáticos por nivel de prioridad.
-- [x] **Filtrado cruzado**: Filtrado simultáneo por estado (Todas / Pendientes / Completadas) y por nivel de prioridad.
-- [x] **Ordenamiento versátil**: Selección de ordenación por fecha (ascendente/descendente) o por prioridad jerárquica.
-- [x] **Completado**: Marcado reactivo con estilo tachado y actualización instantánea de contadores.
-- [x] **Eliminación protegida**: Modal accesible de confirmación con prevención de borrado accidental.
-- [x] **Persistencia continua**: Sincronización automática de todos los cambios en `localStorage`.
+- Registro de tareas con título y niveles de prioridad **alta**, **media** y **baja**.
+- Identificación visual de las prioridades mediante distintivos y colores.
+- Cambio reactivo entre tareas pendientes y completadas.
+- Filtrado por estado y prioridad, ahora ampliado con categoría.
+- Ordenamiento por prioridad y fecha, ahora ampliado con fecha límite y título.
+- Eliminación protegida por confirmación.
+- Persistencia automática en el almacenamiento local del navegador.
